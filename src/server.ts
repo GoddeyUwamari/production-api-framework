@@ -71,26 +71,23 @@ const startServer = (): void => {
  * Graceful shutdown handler
  * Closes all connections before exiting
  */
-const gracefulShutdown = async (signal: string): Promise<void> => {
+const gracefulShutdown = (signal: string): void => {
   console.info(`\n${signal} signal received: closing HTTP server gracefully`);
 
   if (server) {
-    server.close(async () => {
+    server.close(() => {
       console.info('✅ HTTP server closed');
 
-      try {
-        // Close database connection
-        await closeDatabase();
-
-        // Close Redis connection
-        await closeRedis();
-
-        console.info('✅ All connections closed. Exiting process...');
-        process.exit(0);
-      } catch (error) {
-        console.error('❌ Error during shutdown:', error);
-        process.exit(1);
-      }
+      // Close database and Redis connections
+      Promise.all([closeDatabase(), closeRedis()])
+        .then(() => {
+          console.info('✅ All connections closed. Exiting process...');
+          process.exit(0);
+        })
+        .catch((error) => {
+          console.error('❌ Error during shutdown:', error);
+          process.exit(1);
+        });
     });
 
     // Force shutdown after 10 seconds
@@ -104,8 +101,8 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
 };
 
 // Handle graceful shutdown
-process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => void gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error: Error) => {

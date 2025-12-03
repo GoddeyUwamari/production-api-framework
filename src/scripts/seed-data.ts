@@ -185,9 +185,6 @@ const seedTasks = async (users: User[]): Promise<void> => {
 const clearDatabase = async (): Promise<void> => {
   console.info('\n🗑️  Clearing existing data...');
 
-  const taskRepository = new TaskRepository();
-  const userRepository = new UserRepository();
-
   // Delete all tasks first (due to foreign key constraints)
   await AppDataSource.query('DELETE FROM tasks');
   console.info('✅ Cleared tasks table');

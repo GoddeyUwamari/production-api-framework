@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { validationResult, ValidationChain } from 'express-validator';
+import { validationResult, ValidationChain, ValidationError } from 'express-validator';
 
 /**
  * Validation Middleware
@@ -20,11 +20,19 @@ export const validate = (validations: ValidationChain[]) => {
       return next();
     }
 
-    // Format validation errors
-    const formattedErrors = errors.array().map((error) => ({
-      field: error.type === 'field' ? error.path : 'unknown',
-      message: error.msg,
-    }));
+    // Format validation errors with proper typing
+    const formattedErrors = errors.array().map((error: ValidationError) => {
+      if (error.type === 'field') {
+        return {
+          field: error.path,
+          message: String(error.msg),
+        };
+      }
+      return {
+        field: 'unknown',
+        message: String(error.msg),
+      };
+    });
 
     res.status(400).json({
       success: false,

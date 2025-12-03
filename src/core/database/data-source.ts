@@ -92,9 +92,7 @@ export const initializeDatabase = async (maxRetries = 3): Promise<DataSource> =>
   }
 
   console.error('❌ Failed to connect to database after maximum retries');
-  throw new Error(
-    `Database connection failed after ${maxRetries} attempts: ${lastError?.message}`
-  );
+  throw new Error(`Database connection failed after ${maxRetries} attempts: ${lastError?.message}`);
 };
 
 /**

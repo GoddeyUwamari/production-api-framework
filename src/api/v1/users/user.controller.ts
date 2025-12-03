@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { userService } from '../../../services/user.service';
 import { UserRole, UserStatus } from '../../../models/user.entity';
+import {
+  CreateUserBody,
+  UpdateUserBody,
+  ChangePasswordBody,
+  UserIdParams,
+  UserListQuery,
+} from '../../../types/request.types';
 
 /**
  * User Controller
@@ -14,7 +21,11 @@ export class UserController {
    * Create new user
    * POST /api/v1/users
    */
-  async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async createUser(
+    req: Request<object, object, CreateUserBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { email, password, firstName, lastName, role } = req.body;
 
@@ -41,7 +52,7 @@ export class UserController {
    * Get user by ID
    * GET /api/v1/users/:id
    */
-  async getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getUserById(req: Request<UserIdParams>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -70,12 +81,16 @@ export class UserController {
    * Get all users with pagination
    * GET /api/v1/users
    */
-  async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getAllUsers(
+    req: Request<object, object, object, UserListQuery>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const role = req.query.role as UserRole;
-      const status = req.query.status as UserStatus;
+      const role = req.query.role;
+      const status = req.query.status;
 
       const where: Record<string, unknown> = {};
       if (role) where.role = role;
@@ -103,7 +118,11 @@ export class UserController {
    * Update user
    * PUT /api/v1/users/:id
    */
-  async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateUser(
+    req: Request<UserIdParams, object, UpdateUserBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { email, firstName, lastName, role, status } = req.body;
@@ -131,7 +150,7 @@ export class UserController {
    * Delete user (soft delete)
    * DELETE /api/v1/users/:id
    */
-  async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteUser(req: Request<UserIdParams>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -151,7 +170,7 @@ export class UserController {
    * Get user's tasks
    * GET /api/v1/users/:id/tasks
    */
-  async getUserTasks(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getUserTasks(req: Request<UserIdParams>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -189,7 +208,11 @@ export class UserController {
    * Change password
    * POST /api/v1/users/:id/change-password
    */
-  async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async changePassword(
+    req: Request<UserIdParams, object, ChangePasswordBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { oldPassword, newPassword } = req.body;

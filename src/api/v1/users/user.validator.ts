@@ -14,7 +14,9 @@ export const createUserValidator = [
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+    .withMessage(
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    ),
 
   body('firstName')
     .trim()
@@ -69,7 +71,9 @@ export const changePasswordValidator = [
     .isLength({ min: 8 })
     .withMessage('New password must be at least 8 characters long')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('New password must contain at least one uppercase letter, one lowercase letter, and one number'),
+    .withMessage(
+      'New password must contain at least one uppercase letter, one lowercase letter, and one number'
+    ),
 ];
 
 export const getUserValidator = [param('id').isUUID().withMessage('Valid user ID is required')];

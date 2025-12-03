@@ -1,6 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../../../services/task.service';
 import { TaskStatus, TaskPriority } from '../../../models/task.entity';
+import {
+  CreateTaskBody,
+  UpdateTaskBody,
+  UpdateTaskStatusBody,
+  AssignTaskBody,
+  TaskIdParams,
+  TaskListQuery,
+  PaginationQuery,
+} from '../../../types/request.types';
 
 /**
  * Task Controller
@@ -14,7 +23,11 @@ export class TaskController {
    * Create new task
    * POST /api/v1/tasks
    */
-  async createTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async createTask(
+    req: Request<object, object, CreateTaskBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { title, description, status, priority, dueDate, assigneeId, createdById } = req.body;
 
@@ -54,7 +67,7 @@ export class TaskController {
    * Get task by ID
    * GET /api/v1/tasks/:id
    */
-  async getTaskById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getTaskById(req: Request<TaskIdParams>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -83,13 +96,17 @@ export class TaskController {
    * Get all tasks with pagination and filters
    * GET /api/v1/tasks
    */
-  async getAllTasks(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getAllTasks(
+    req: Request<object, object, object, TaskListQuery>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const status = req.query.status as TaskStatus;
-      const priority = req.query.priority as TaskPriority;
-      const assigneeId = req.query.assigneeId as string;
+      const status = req.query.status;
+      const priority = req.query.priority;
+      const assigneeId = req.query.assigneeId;
 
       const where: Record<string, unknown> = {};
       if (status) where.status = status;
@@ -118,7 +135,11 @@ export class TaskController {
    * Update task
    * PUT /api/v1/tasks/:id
    */
-  async updateTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateTask(
+    req: Request<TaskIdParams, object, UpdateTaskBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { title, description, status, priority, dueDate, assigneeId } = req.body;
@@ -147,12 +168,16 @@ export class TaskController {
    * Update task status
    * PATCH /api/v1/tasks/:id/status
    */
-  async updateTaskStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateTaskStatus(
+    req: Request<TaskIdParams, object, UpdateTaskStatusBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { status } = req.body;
 
-      const task = await taskService.updateStatus(id, status as TaskStatus);
+      const task = await taskService.updateStatus(id, status);
 
       res.status(200).json({
         success: true,
@@ -169,7 +194,11 @@ export class TaskController {
    * Assign task to user
    * PATCH /api/v1/tasks/:id/assign
    */
-  async assignTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async assignTask(
+    req: Request<TaskIdParams, object, AssignTaskBody>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { assigneeId } = req.body;
@@ -191,7 +220,7 @@ export class TaskController {
    * Delete task (soft delete)
    * DELETE /api/v1/tasks/:id
    */
-  async deleteTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteTask(req: Request<TaskIdParams>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -211,7 +240,11 @@ export class TaskController {
    * Get overdue tasks
    * GET /api/v1/tasks/overdue
    */
-  async getOverdueTasks(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getOverdueTasks(
+    req: Request<object, object, object, PaginationQuery>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;

@@ -29,15 +29,9 @@ export const createTaskValidator = [
     .isIn(Object.values(TaskPriority))
     .withMessage(`Priority must be one of: ${Object.values(TaskPriority).join(', ')}`),
 
-  body('dueDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Due date must be a valid ISO 8601 date'),
+  body('dueDate').optional().isISO8601().withMessage('Due date must be a valid ISO 8601 date'),
 
-  body('assigneeId')
-    .optional()
-    .isUUID()
-    .withMessage('Assignee ID must be a valid UUID'),
+  body('assigneeId').optional().isUUID().withMessage('Assignee ID must be a valid UUID'),
 ];
 
 export const updateTaskValidator = [
@@ -65,15 +59,9 @@ export const updateTaskValidator = [
     .isIn(Object.values(TaskPriority))
     .withMessage(`Priority must be one of: ${Object.values(TaskPriority).join(', ')}`),
 
-  body('dueDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Due date must be a valid ISO 8601 date'),
+  body('dueDate').optional().isISO8601().withMessage('Due date must be a valid ISO 8601 date'),
 
-  body('assigneeId')
-    .optional()
-    .isUUID()
-    .withMessage('Assignee ID must be a valid UUID'),
+  body('assigneeId').optional().isUUID().withMessage('Assignee ID must be a valid UUID'),
 ];
 
 export const updateTaskStatusValidator = [
