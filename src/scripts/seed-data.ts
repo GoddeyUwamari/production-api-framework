@@ -162,7 +162,7 @@ const seedTasks = async (users: User[]): Promise<void> => {
       priority: TaskPriority.LOW,
       assigneeId: undefined,
       createdById: user1!.id,
-      dueDate: null,
+      dueDate: undefined,
     },
     {
       title: 'Update README documentation',

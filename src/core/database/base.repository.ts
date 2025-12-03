@@ -71,7 +71,7 @@ export abstract class BaseRepository<T extends ObjectLiteral> implements IBaseRe
   async findById(id: string): Promise<T | null> {
     try {
       const entity = await this.repository.findOne({
-        where: { id } as FindOptionsWhere<T>,
+        where: { id } as unknown as FindOptionsWhere<T>,
       });
       return entity;
     } catch (error) {
@@ -206,7 +206,7 @@ export abstract class BaseRepository<T extends ObjectLiteral> implements IBaseRe
   async exists(id: string): Promise<boolean> {
     try {
       const count = await this.repository.count({
-        where: { id } as FindOptionsWhere<T>,
+        where: { id } as unknown as FindOptionsWhere<T>,
       });
       return count > 0;
     } catch (error) {

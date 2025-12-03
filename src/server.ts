@@ -5,7 +5,7 @@ import { config } from './config/environment';
 import { initializeDatabase, closeDatabase } from './core/database/data-source';
 import { initializeRedis, closeRedis } from './core/cache/redis.config';
 
-let server: Server;
+let server: Server | undefined;
 
 /**
  * Initialize all services (database, cache, etc.)
