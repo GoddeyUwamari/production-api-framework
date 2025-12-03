@@ -1,9 +1,35 @@
+import 'reflect-metadata';
 import { Server } from 'http';
 import app from './app';
 import { config } from './config/environment';
+import { initializeDatabase, closeDatabase } from './core/database/data-source';
+import { initializeRedis, closeRedis } from './core/cache/redis.config';
 
 let server: Server;
 
+/**
+ * Initialize all services (database, cache, etc.)
+ */
+const initializeServices = async (): Promise<void> => {
+  try {
+    console.info('🔧 Initializing services...\n');
+
+    // Initialize database connection
+    await initializeDatabase();
+
+    // Initialize Redis connection
+    initializeRedis();
+
+    console.info('\n✅ All services initialized successfully\n');
+  } catch (error) {
+    console.error('\n❌ Failed to initialize services:', error);
+    throw error;
+  }
+};
+
+/**
+ * Start HTTP server
+ */
 const startServer = (): void => {
   try {
     const PORT = config.port;
@@ -22,6 +48,8 @@ const startServer = (): void => {
       console.info(`📍 Health Check: http://${HOST}:${PORT}/health`);
       console.info(`📍 Readiness Check: http://${HOST}:${PORT}/ready`);
       console.info(`📍 API Info: http://${HOST}:${PORT}/api/${config.api_version}`);
+      console.info(`📍 Users API: http://${HOST}:${PORT}/api/${config.api_version}/users`);
+      console.info(`📍 Tasks API: http://${HOST}:${PORT}/api/${config.api_version}/tasks`);
       console.info('='.repeat(60));
     });
 
@@ -39,21 +67,30 @@ const startServer = (): void => {
   }
 };
 
-const gracefulShutdown = (signal: string): void => {
+/**
+ * Graceful shutdown handler
+ * Closes all connections before exiting
+ */
+const gracefulShutdown = async (signal: string): Promise<void> => {
   console.info(`\n${signal} signal received: closing HTTP server gracefully`);
 
   if (server) {
-    server.close(() => {
+    server.close(async () => {
       console.info('✅ HTTP server closed');
 
-      // Close database connections here in Phase 2
-      // await database.close();
+      try {
+        // Close database connection
+        await closeDatabase();
 
-      // Close Redis connections here in Phase 2
-      // await redis.disconnect();
+        // Close Redis connection
+        await closeRedis();
 
-      console.info('✅ All connections closed. Exiting process...');
-      process.exit(0);
+        console.info('✅ All connections closed. Exiting process...');
+        process.exit(0);
+      } catch (error) {
+        console.error('❌ Error during shutdown:', error);
+        process.exit(1);
+      }
     });
 
     // Force shutdown after 10 seconds
@@ -67,8 +104,8 @@ const gracefulShutdown = (signal: string): void => {
 };
 
 // Handle graceful shutdown
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => void gracefulShutdown('SIGINT'));
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error: Error) => {
@@ -82,7 +119,24 @@ process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) =>
   process.exit(1);
 });
 
-// Start the server
-startServer();
+/**
+ * Bootstrap application
+ * Initialize services then start HTTP server
+ */
+const bootstrap = async (): Promise<void> => {
+  try {
+    // Initialize all services first
+    await initializeServices();
 
-// export default server;
+    // Start HTTP server
+    startServer();
+  } catch (error) {
+    console.error('❌ Failed to bootstrap application:', error);
+    process.exit(1);
+  }
+};
+
+// Start the application
+void bootstrap();
+
+export default server;
