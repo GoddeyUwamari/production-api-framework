@@ -323,14 +323,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: 🐳 Build Docker image for testing
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./infrastructure/docker/Dockerfile
-          push: false
-          load: true
+          load: true              # Load into local Docker daemon
+          push: false             # Don't push to registry
           tags: production-api:ci-test
+          platforms: linux/amd64  # Single platform for testing (faster)
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
