@@ -322,19 +322,25 @@ jobs:
 
       - name: 🐳 Build Docker image for testing
         run: |
-          echo "Building Docker image with buildx and explicit load..."
+          echo "Building Docker image with explicit docker output..."
           docker buildx build \
-            --load \
+            --output=type=docker \
             -f infrastructure/docker/Dockerfile \
             -t production-api:ci-test \
             --platform linux/amd64 \
             .
 
-          echo "Verifying image was created..."
-          docker images | grep production-api:ci-test || (echo "❌ Image not found after build" && exit 1)
+          echo "Verifying image was loaded..."
+          docker images production-api:ci-test
+
+          if ! docker images -q production-api:ci-test | grep -q .; then
+            echo "❌ Image not found in Docker daemon"
+            echo "Available images:"
+            docker images
+            exit 1
+          fi
 
           echo "✅ Docker image built and loaded successfully"
-          docker images production-api:ci-test
 
       - name: Test Docker image
         run: |
