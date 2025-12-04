@@ -322,10 +322,21 @@ jobs:
 
       - name: 🐳 Build Docker image for testing
         run: |
+          echo "Building Docker image..."
           docker build \
             -f infrastructure/docker/Dockerfile \
             -t production-api:ci-test \
             .
+
+          echo "Verifying image was built..."
+          docker images | grep production-api
+
+          if ! docker images | grep -q "production-api.*ci-test"; then
+            echo "❌ Docker image build failed - image not found"
+            exit 1
+          fi
+
+          echo "✅ Docker image built successfully"
 
       - name: Test Docker image
         run: |
