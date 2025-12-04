@@ -55,11 +55,11 @@ interface EnvironmentConfig {
 }
 
 const getEnvironmentVariable = (key: string, defaultValue?: string): string => {
-  const value = process.env[key] || defaultValue;
-  if (!value) {
+  const value = process.env[key];
+  if (value === undefined && defaultValue === undefined) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
-  return value;
+  return value !== undefined ? value : defaultValue!;
 };
 
 const getNumberEnvironmentVariable = (key: string, defaultValue: number): number => {
