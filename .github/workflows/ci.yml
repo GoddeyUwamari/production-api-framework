@@ -329,6 +329,7 @@ jobs:
           context: .
           file: ./infrastructure/docker/Dockerfile
           push: false
+          load: true
           tags: production-api:ci-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
