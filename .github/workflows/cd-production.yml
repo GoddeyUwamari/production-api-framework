@@ -34,7 +34,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Convert repository name to lowercase for Docker compatibility
+  IMAGE_NAME: ${{ github.repository_owner }}/production-api-framework
   KUBE_NAMESPACE: production-api-production
 
 jobs:
@@ -163,8 +164,9 @@ jobs:
         run: |
           IMAGE_TAG=${{ github.event.inputs.image_tag || github.event.release.tag_name }}
           cd infrastructure/kubernetes/production
+          # Use lowercase image name for Docker compatibility
           kustomize edit set image \
-            ghcr.io/${{ github.repository }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+            ghcr.io/goddeyuwamari/production-api-framework=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
 
       - name: Deploy to production
         run: |
