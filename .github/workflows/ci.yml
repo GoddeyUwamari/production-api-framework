@@ -263,6 +263,8 @@ jobs:
 
       - name: Test Redis connection
         run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-tools
           redis-cli -h localhost -p 6379 ping | grep -q PONG && echo "✅ Redis connection successful" || exit 1
 
   # ===========================================================================
