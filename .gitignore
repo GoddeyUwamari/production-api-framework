@@ -81,3 +81,7 @@ Thumbs.db
 .parcel-cache/
 .next/
 .nuxt/
+.env
+*.tfvars
+*.tfstate
+*.pem

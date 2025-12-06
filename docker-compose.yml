@@ -1,124 +1,33 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: production-api-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_dev_password
-      POSTGRES_DB: production_api
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - production-api-network
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: production-api-redis
+    container_name: production-redis
     restart: unless-stopped
-    command: redis-server --requirepass redis_dev_password --appendonly yes
     ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-    networks:
-      - production-api-network
+      - "6379:6379"
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
 
-  # pgAdmin (Optional - Database Management UI)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: production-api-pgadmin
+  api:
+    image: ghcr.io/goddeyuwamari/production-api-framework:main
+    container_name: production-api
     restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     ports:
-      - '5050:80'
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - production-api-network
-    depends_on:
-      - postgres
-
-  # Redis Commander (Optional - Redis Management UI)
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: production-api-redis-commander
-    restart: unless-stopped
+      - "3000:3000"
+    env_file:
+      - .env
     environment:
-      REDIS_HOSTS: local:redis:6379:0:redis_dev_password
-    ports:
-      - '8081:8081'
-    networks:
-      - production-api-network
+      - NODE_ENV=production
     depends_on:
       - redis
-
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
-  pgadmin_data:
-    driver: local
-
-networks:
-  production-api-network:
-    driver: bridge
-
-# Usage Instructions:
-#
-# Start all services:
-#   docker-compose up -d
-#
-# Start only required services (PostgreSQL & Redis):
-#   docker-compose up -d postgres redis
-#
-# View logs:
-#   docker-compose logs -f
-#
-# Stop all services:
-#   docker-compose down
-#
-# Stop and remove volumes (⚠️ deletes all data):
-#   docker-compose down -v
-#
-# Access PostgreSQL:
-#   Host: localhost
-#   Port: 5432
-#   Username: postgres
-#   Password: postgres_dev_password
-#   Database: production_api
-#
-# Access Redis:
-#   Host: localhost
-#   Port: 6379
-#   Password: redis_dev_password
-#
-# Access pgAdmin (optional):
-#   URL: http://localhost:5050
-#   Email: admin@example.com
-#   Password: admin
-#
-# Access Redis Commander (optional):
-#   URL: http://localhost:8081
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
