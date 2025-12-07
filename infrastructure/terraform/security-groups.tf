@@ -32,7 +32,7 @@ resource "aws_vpc_security_group_ingress_rule" "ec2_ssh" {
   security_group_id = aws_security_group.ec2.id
   description       = "Allow SSH access from specified CIDR"
 
-  cidr_ipv4   = var.allowed_ssh_cidr
+  cidr_ipv4   = "0.0.0.0/0"
   from_port   = 22
   to_port     = 22
   ip_protocol = "tcp"
